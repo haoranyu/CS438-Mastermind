@@ -81,11 +81,21 @@ void evaluate(char *ans, char *guess, char *respond, int counter){
 	else
 		sprintf(respond, "2%d correct color+slot, %d correct colors", match, exist);
 }
-
+void getRandom(char *aim){
+	char *set = "012345";
+	int i;
+	char str[4];
+	srand((unsigned int)time((time_t *)NULL));
+	for(i = 0; i < 4; i++){
+		str[i] = set[(rand()%6)];
+	}
+	str[4] = '\0';
+	strcpy(aim, str);
+}
 int main(int argc, char* argv[])
 {
 
-	char ans[4];
+	char ans[7];
 	char *port = "80";
 	int sockfd, new_fd;  // listen on sock_fd, new connection on new_fd
 	struct addrinfo hints, *servinfo, *p;
@@ -133,7 +143,6 @@ int main(int argc, char* argv[])
 			perror("server: bind");
 			continue;
 		}
-
 		break;
 	}
 
@@ -158,6 +167,9 @@ int main(int argc, char* argv[])
 	}
 
 	scanf("%s", &ans);
+	if(!strcmp(ans,"random")){
+		getRandom(ans);
+	}
 
 	//printf("server: waiting for connections...\n");
 
