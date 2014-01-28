@@ -92,14 +92,14 @@ int main(int argc, char *argv[])
 		if (send(sockfd, guess, 4, 0) == -1)
 			perror("send");
 
-		if ((numbytes = recv(sockfd, buf, 5, 0)) == -1) {
+		if ((numbytes = recv(sockfd, buf, 105, 0)) == -1) {
 		    perror("recv");
 		    exit(1);
 		}
 
 		buf[numbytes] = '\0';
 
-		printf("client: received '%s'\n",buf);
+		printf("%s\n",buf);
 		counter ++;
 	}
 

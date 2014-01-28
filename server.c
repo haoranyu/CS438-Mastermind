@@ -31,9 +31,56 @@ void *get_in_addr(struct sockaddr *sa)
 
 	return &(((struct sockaddr_in6*)sa)->sin6_addr);
 }
+int existArr(int c, int *arr){
+	int i;
+	for (i = 0; i < 4; ++i) {
+		if(arr[i] == (c - 48))
+			return 1;
+	}
+	return 0;
+}
+void insertArr(int c, int *arr){
+	int i;
+	for (i = 0; i < 4; ++i) {
+		if(arr[i] == -1){
+			arr[i] = (c - 48);
+			break;
+		}
+	}
+}
+void * evaluate(char *ans, char *guess, char *respond){
+	int i, j;
+	int match = 0;
+	int exist = 0;
+	int match_array[4] = {-1,-1,-1,-1};
+	int exist_array[4] = {-1,-1,-1,-1};
+
+	for(i = 0; i < 4; i++){
+		if(ans[i] == guess[i]){
+			match++;
+			insertArr(guess[i], match_array);
+		}
+	}
+	for(i = 0; i < 4; i++){
+		if(ans[i] != guess[i]){
+			for(j = 0; j < 4; j++){
+				if(!(existArr(guess[i],match_array) || existArr(guess[i],exist_array)) && ans[j] == guess[i]){
+					exist++;
+					insertArr(guess[i], exist_array);
+				}
+			}
+		}
+	}
+	//printf("%d%d%d%d\n",match_array[0],match_array[1],match_array[2],match_array[3]);
+	//printf("%d%d%d%d\n",exist_array[0],exist_array[1],exist_array[2],exist_array[3]);
+
+	sprintf(respond, "%d correct color+slot, %d correct colors", match, exist);
+}
 
 int main(int argc, char* argv[])
 {
+
+	char ans[4];
 	char *port = "80";
 	int sockfd, new_fd;  // listen on sock_fd, new connection on new_fd
 	struct addrinfo hints, *servinfo, *p;
@@ -105,6 +152,8 @@ int main(int argc, char* argv[])
 		exit(1);
 	}
 
+	scanf("%s", &ans);
+
 	printf("server: waiting for connections...\n");
 
 	while(1) {  // main accept() loop
@@ -120,22 +169,21 @@ int main(int argc, char* argv[])
 			s, sizeof s);
 		printf("server: got connection from %s\n", s);
 
-		char *myNum = "1111";
-
 		if (!fork()) { // this is the child process
 			close(sockfd); // child doesn't need the listener
 			int counter = 0;
 
 			while(counter < 8){
-				char buf[MAXDATASIZE];
-				int  numbytes;
-				if ((numbytes = recv(new_fd, buf, 4, 0)) == -1) {
+				char guess[5];
+				char respond[50];
+				if ((recv(new_fd, guess, 4, 0)) == -1) {
 				    perror("recv");
 				    exit(1);
 				}
-				buf[numbytes] = '\0';
-				perror(buf);
-				if (send(new_fd, buf, 4, 0) == -1)
+				guess[4] = '\0';
+				evaluate(ans, guess, respond);
+
+				if (send(new_fd, respond, 100, 0) == -1)
 					perror("send");
 				counter++;
 			}
