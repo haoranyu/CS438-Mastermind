@@ -7,7 +7,7 @@ client.c
 K 25
 svn:wc:ra_dav:version-url
 V 47
-/svn/sp14-cs438/!svn/ver/230/hyu34/MP1/client.c
+/svn/sp14-cs438/!svn/ver/245/hyu34/MP1/client.c
 END
 server
 K 25
@@ -19,7 +19,7 @@ server.c
 K 25
 svn:wc:ra_dav:version-url
 V 47
-/svn/sp14-cs438/!svn/ver/230/hyu34/MP1/server.c
+/svn/sp14-cs438/!svn/ver/245/hyu34/MP1/server.c
 END
 README.md
 K 25
