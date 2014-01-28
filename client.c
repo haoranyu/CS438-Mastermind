@@ -14,8 +14,6 @@
 
 #include <arpa/inet.h>
 
-#define PORT "3490" // the port client will be connecting to 
-
 #define MAXDATASIZE 100 // max number of bytes we can get at once 
 
 // get sockaddr, IPv4 or IPv6:
@@ -30,22 +28,28 @@ void *get_in_addr(struct sockaddr *sa)
 
 int main(int argc, char *argv[])
 {
-	int sockfd, numbytes;  
-	char buf[MAXDATASIZE];
+	char *port = "80";
+	char *host = "127.0.0.1";
+	int sockfd;  
 	struct addrinfo hints, *servinfo, *p;
 	int rv;
 	char s[INET6_ADDRSTRLEN];
 
-	if (argc != 2) {
-	    fprintf(stderr,"usage: client hostname\n");
-	    exit(1);
-	}
+
+	if (argc != 3){
+        printf("Use format: ./client host port\n");
+        exit(1);
+    }
+    else{
+    	host = argv[1];
+    	port = argv[2];
+    }
 
 	memset(&hints, 0, sizeof hints);
 	hints.ai_family = AF_UNSPEC;
 	hints.ai_socktype = SOCK_STREAM;
 
-	if ((rv = getaddrinfo(argv[1], PORT, &hints, &servinfo)) != 0) {
+	if ((rv = getaddrinfo(host, port, &hints, &servinfo)) != 0) {
 		fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(rv));
 		return 1;
 	}
@@ -78,15 +82,38 @@ int main(int argc, char *argv[])
 
 	freeaddrinfo(servinfo); // all done with this structure
 
-	if ((numbytes = recv(sockfd, buf, MAXDATASIZE-1, 0)) == -1) {
+	int counter = 0;
+	while(counter < 8){
+		char buf[5], guess[5];
+		int numbytes;
+
+		scanf("%s", &guess);
+
+		if (send(sockfd, guess, 4, 0) == -1)
+			perror("send");
+
+		if ((numbytes = recv(sockfd, buf, 5, 0)) == -1) {
+		    perror("recv");
+		    exit(1);
+		}
+
+		buf[numbytes] = '\0';
+
+		printf("client: received '%s'\n",buf);
+		counter ++;
+	}
+
+
+	char finish[9];
+
+	if ((recv(sockfd, finish, 8, 0)) == -1) {
 	    perror("recv");
 	    exit(1);
 	}
 
-	buf[numbytes] = '\0';
+	finish[8] = '\0';
 
-	printf("client: received '%s'\n",buf);
-
+	printf("%s\n", finish);
 	close(sockfd);
 
 	return 0;

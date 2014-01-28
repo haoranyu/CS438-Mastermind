@@ -15,10 +15,8 @@
 #include <sys/wait.h>
 #include <signal.h>
 
-#define PORT "3490"  // the port users will be connecting to
-
 #define BACKLOG 10	 // how many pending connections queue will hold
-
+#define MAXDATASIZE 100 // max number of bytes we can get at once 
 void sigchld_handler(int s)
 {
 	while(waitpid(-1, NULL, WNOHANG) > 0);
@@ -34,8 +32,9 @@ void *get_in_addr(struct sockaddr *sa)
 	return &(((struct sockaddr_in6*)sa)->sin6_addr);
 }
 
-int main(void)
+int main(int argc, char* argv[])
 {
+	char *port = "80";
 	int sockfd, new_fd;  // listen on sock_fd, new connection on new_fd
 	struct addrinfo hints, *servinfo, *p;
 	struct sockaddr_storage their_addr; // connector's address information
@@ -45,12 +44,20 @@ int main(void)
 	char s[INET6_ADDRSTRLEN];
 	int rv;
 
+	if (argc != 2){
+        printf("Use format: ./server port\n");
+        exit(1);
+    }
+    else{
+    	port = argv[1];
+    }
+
 	memset(&hints, 0, sizeof hints);
 	hints.ai_family = AF_UNSPEC;
 	hints.ai_socktype = SOCK_STREAM;
 	hints.ai_flags = AI_PASSIVE; // use my IP
 
-	if ((rv = getaddrinfo(NULL, PORT, &hints, &servinfo)) != 0) {
+	if ((rv = getaddrinfo(NULL, port, &hints, &servinfo)) != 0) {
 		fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(rv));
 		return 1;
 	}
@@ -113,9 +120,27 @@ int main(void)
 			s, sizeof s);
 		printf("server: got connection from %s\n", s);
 
+		char *myNum = "1111";
+
 		if (!fork()) { // this is the child process
 			close(sockfd); // child doesn't need the listener
-			if (send(new_fd, "Hello, world!", 13, 0) == -1)
+			int counter = 0;
+
+			while(counter < 8){
+				char buf[MAXDATASIZE];
+				int  numbytes;
+				if ((numbytes = recv(new_fd, buf, 4, 0)) == -1) {
+				    perror("recv");
+				    exit(1);
+				}
+				buf[numbytes] = '\0';
+				perror(buf);
+				if (send(new_fd, buf, 4, 0) == -1)
+					perror("send");
+				counter++;
+			}
+			
+			if (send(new_fd, "Finished", 8, 0) == -1)
 				perror("send");
 			close(new_fd);
 			exit(0);
