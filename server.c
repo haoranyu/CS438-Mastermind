@@ -48,7 +48,7 @@ void insertArr(int c, int *arr){
 		}
 	}
 }
-void * evaluate(char *ans, char *guess, char *respond){
+void evaluate(char *ans, char *guess, char *respond, int counter){
 	int i, j;
 	int match = 0;
 	int exist = 0;
@@ -74,7 +74,12 @@ void * evaluate(char *ans, char *guess, char *respond){
 	//printf("%d%d%d%d\n",match_array[0],match_array[1],match_array[2],match_array[3]);
 	//printf("%d%d%d%d\n",exist_array[0],exist_array[1],exist_array[2],exist_array[3]);
 
-	sprintf(respond, "%d correct color+slot, %d correct colors", match, exist);
+	if(match == 4)
+		sprintf(respond, "1%d correct color+slot, %d correct colors", match, exist);
+	else if(counter == 8)
+		sprintf(respond, "0%d correct color+slot, %d correct colors", match, exist);
+	else
+		sprintf(respond, "2%d correct color+slot, %d correct colors", match, exist);
 }
 
 int main(int argc, char* argv[])
@@ -154,7 +159,7 @@ int main(int argc, char* argv[])
 
 	scanf("%s", &ans);
 
-	printf("server: waiting for connections...\n");
+	//printf("server: waiting for connections...\n");
 
 	while(1) {  // main accept() loop
 		sin_size = sizeof their_addr;
@@ -167,29 +172,27 @@ int main(int argc, char* argv[])
 		inet_ntop(their_addr.ss_family,
 			get_in_addr((struct sockaddr *)&their_addr),
 			s, sizeof s);
-		printf("server: got connection from %s\n", s);
+		//printf("server: got connection from %s\n", s);
 
 		if (!fork()) { // this is the child process
 			close(sockfd); // child doesn't need the listener
 			int counter = 0;
 
 			while(counter < 8){
+				counter++;
 				char guess[5];
 				char respond[50];
+				char toclient[50];
 				if ((recv(new_fd, guess, 4, 0)) == -1) {
 				    perror("recv");
 				    exit(1);
 				}
 				guess[4] = '\0';
-				evaluate(ans, guess, respond);
+				evaluate(ans, guess, respond, counter);
 
 				if (send(new_fd, respond, 100, 0) == -1)
 					perror("send");
-				counter++;
 			}
-			
-			if (send(new_fd, "Finished", 8, 0) == -1)
-				perror("send");
 			close(new_fd);
 			exit(0);
 		}

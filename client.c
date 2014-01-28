@@ -78,13 +78,12 @@ int main(int argc, char *argv[])
 
 	inet_ntop(p->ai_family, get_in_addr((struct sockaddr *)p->ai_addr),
 			s, sizeof s);
-	printf("client: connecting to %s\n", s);
+	//printf("client: connecting to %s\n", s);
 
 	freeaddrinfo(servinfo); // all done with this structure
 
-	int counter = 0;
-	while(counter < 8){
-		char buf[5], guess[5];
+	while(1){
+		char respond[200], guess[5];
 		int numbytes;
 
 		scanf("%s", &guess);
@@ -92,28 +91,26 @@ int main(int argc, char *argv[])
 		if (send(sockfd, guess, 4, 0) == -1)
 			perror("send");
 
-		if ((numbytes = recv(sockfd, buf, 105, 0)) == -1) {
+		if ((numbytes = recv(sockfd, respond, 105, 0)) == -1) {
 		    perror("recv");
 		    exit(1);
 		}
 
-		buf[numbytes] = '\0';
+		respond[numbytes] = '\0';
 
-		printf("%s\n",buf);
-		counter ++;
+		int correct = (int)respond[0] - 48;
+		printf("%s\n", respond+1);
+
+		if(correct == 0){
+			printf("you lose\n");
+			break;
+		}
+		else if(correct == 1){
+			printf("you win\n");
+			break;
+		}
 	}
 
-
-	char finish[9];
-
-	if ((recv(sockfd, finish, 8, 0)) == -1) {
-	    perror("recv");
-	    exit(1);
-	}
-
-	finish[8] = '\0';
-
-	printf("%s\n", finish);
 	close(sockfd);
 
 	return 0;
