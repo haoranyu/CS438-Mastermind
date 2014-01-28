@@ -14,8 +14,6 @@
 
 #include <arpa/inet.h>
 
-#define MAXDATASIZE 100 // max number of bytes we can get at once 
-
 // get sockaddr, IPv4 or IPv6:
 void *get_in_addr(struct sockaddr *sa)
 {

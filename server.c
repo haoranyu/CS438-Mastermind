@@ -201,7 +201,7 @@ int main(int argc, char* argv[])
 				guess[4] = '\0';
 				evaluate(ans, guess, respond, counter);
 
-				if (send(new_fd, respond, 100, 0) == -1)
+				if (send(new_fd, respond, strlen(respond), 0) == -1)
 					perror("send");
 			}
 			close(new_fd);
