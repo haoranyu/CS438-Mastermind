@@ -164,13 +164,13 @@ int main(int argc, char* argv[])
 		perror("sigaction");
 		exit(1);
 	}
-
+	printf("Please specify 4-digits number or input \"random\": \n");
 	scanf("%s", &ans);
 	if(!strcmp(ans,"random")){
 		getRandom(ans);
 	}
 
-	//printf("server: waiting for connections...\n");
+	
 
 	while(1) {  // main accept() loop
 		sin_size = sizeof their_addr;
